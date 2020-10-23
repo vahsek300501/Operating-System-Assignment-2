@@ -12,13 +12,20 @@ int globalVariable = 10;
 
 void * threadFunction(void * data) {
     pthread_detach(pthread_self());
-    for(int i=0;i<100;i++) {
-        globalVariable--;
-        printf("CHILD THREAD: %d\n"globalVariable);
+    while(globalVariable != -90) {
+        globalVariable --;
     }
+    printf("CHILD THREAD %d\n",globalVariable);
 }
 
 int main() {
-    
-
+    pthread_t thread_id;
+    int rc = pthread_create(&thread_id,NULL,threadFunction,NULL);
+    if(rc) {
+        printf("Thread not spawn");
+    }
+    while(globalVariable!=100) {
+        globalVariable++;
+    } 
+    printf("MAIN THREAD: %d\n",globalVariable);
 }
