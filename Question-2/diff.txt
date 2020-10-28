@@ -1,0 +1,87 @@
+diff -Nar /home/keshav/Desktop/Question-2/linux-5.9.1/arch/x86/entry/syscalls/syscall_64.tbl /home/keshav/Desktop/Question-2/Original/linux-5.9.1/arch/x86/entry/syscalls/syscall_64.tbl
+364c364
+< 440 common  sh_task_info    sys_sh_task_info
+---
+> 
+diff -Nar /home/keshav/Desktop/Question-2/linux-5.9.1/Makefile /home/keshav/Desktop/Question-2/Original/linux-5.9.1/Makefile
+1097c1097
+< core-y		+= kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/ sh_task_info/
+---
+> core-y		+= kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/
+diff -Nar /home/keshav/Desktop/Question-2/linux-5.9.1/sh_task_info/Makefile /home/keshav/Desktop/Question-2/Original/linux-5.9.1/sh_task_info/Makefile
+1d0
+< obj-y := sh_task_info.o
+\ No newline at end of file
+diff -Nar /home/keshav/Desktop/Question-2/linux-5.9.1/sh_task_info/sh_task_info.c /home/keshav/Desktop/Question-2/Original/linux-5.9.1/sh_task_info/sh_task_info.c
+1,70d0
+< #include <linux/kernel.h>
+< #include <linux/sched.h>
+< #include <linux/module.h>
+< #include <linux/pid.h>
+< #include <linux/syscalls.h>
+< #include <linux/errno.h>
+< #include <linux/uaccess.h>
+< #include <linux/fs.h>
+< #include <linux/init.h>
+< #include <linux/string.h>
+< #include <linux/errno.h>
+< 
+< SYSCALL_DEFINE2(sh_task_info,int,process_pid,char *,filename)
+< {
+<     struct task_struct * task;
+<     task = find_task_by_vpid(process_pid);
+<     if(task == NULL) {
+<         printk("THE TASK RECEIVED IN NULL\n");
+<         return -EINVAL;
+<     }
+< 
+<     printk("PROCESS PID: %d%c",process_pid,'\n');
+<     printk("PROCESS NAME: %s%c",task->comm,'\n');
+<     printk("STATE: %ld%c",task->state,'\n');
+<     printk("PRIORITY: %d%c",task->prio,'\n');
+<     printk("STATIC PRIORITY: %d%c",task->static_prio,'\n');
+<     printk("NORMAL PRIORITY: %d%c",task->normal_prio,'\n');
+<     printk("CURRENT CPU: %d%c",task->cpu,'\n');
+<     printk("NUMBER OF CPU RUNS: %ld%c",task->sched_info.pcount,'\n');
+<     printk("RUNQUEUE WAITING TIME: %lld%c",task->sched_info.run_delay,'\n');
+<     printk("LAST QUEUED: %lld%c",task->sched_info.last_queued,'\n');
+<     printk("UTIME: %llu%c",task->utime,'\n');
+<     printk("STIME: %llu%c",task->stime,'\n');
+<     
+<     struct file* fout = NULL;
+<     fout = filp_open(filename,O_APPEND | O_WRONLY | O_CREAT,0644);
+< 
+<     if(fout == NULL) {
+<         printk("FILE NOT OPENED\n");
+<         return EBADFD;
+<     }
+< 
+<     char arr[1024];
+<     sprintf(arr,"PROCESS PID: %d\nPROCESS NAME: %s\nPROCESS STATE: %ld\nPRIORITY: %d\nSTATIC PRIORITY: %d\nNORMAL PRIORITY: %d\nCURRENT CPU: %d\nCPU RUNS: %ld\nRUNQUEUE WAITING TIME: %lld\nLAST QUEUED: %lld\nUTIME: %llu\nSTIME: %llu\n",process_pid,task->comm,task->state,task->prio,task->static_prio,task->normal_prio,task->cpu,task->sched_info.pcount,task->sched_info.run_delay,task->sched_info.last_queued,task->utime,task->stime);
+<     kernel_write(fout,arr,strlen(arr),&fout->f_pos);
+< 
+<     struct task_struct tmp;
+<     struct list_head * p;
+<     pid_t tmp_pid;
+<     INIT_LIST_HEAD(&tmp.children);
+< 
+<     printk("CHILDREN: \n");
+<     kernel_write(fout,"CHILDREN: \n",strlen("CHILDREN: \n"),&fout->f_pos);
+<     int i=1;
+< 
+<     list_for_each(p, &(task->children)){
+<         char tmpArr2[1024];
+<         tmp = *list_entry(p, struct task_struct, sibling);
+<         tmp_pid = tmp.pid;
+<         printk("    CHILD-%d %d\n",i,tmp_pid);
+<         sprintf(tmpArr2,"    CHILD-%d: %d\n\0",i,tmp_pid);
+<         kernel_write(fout,tmpArr2,strlen(tmpArr2),&fout->f_pos);
+<         i=i+1;
+<  	}
+< 
+< 
+< 
+<     filp_close(fout,NULL);
+<     return 0;
+< }
+\ No newline at end of file
